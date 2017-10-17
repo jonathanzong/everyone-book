@@ -23,6 +23,11 @@ with open('everyonebot_tweets.csv', 'r') as f:
 days = defaultdict(list)
 h = HTMLParser()
 
+class Tweet:
+    def __init__(self, time, text):
+        self.time = time
+        self.text = text
+
 for line in reversed(lines):
   id = line[0]
   created_at = line[1]
@@ -34,14 +39,40 @@ for line in reversed(lines):
   timestamp = stamp[1]
   timestamp = time.strptime(timestamp,"%H:%M:%S")
   poop = time.strftime("%-I%p", timestamp).lower()
-  a = ((int(time.strftime("%-H", timestamp)) + 11) * 2) % 24
-  timestamp = (chr(128336+a//2+a%2*12)) #+ poop
-  days[day].append(timestamp +'\n' + text)
+  numHour = int(time.strftime("%-I", timestamp))
+  if numHour == 12:
+    numHour = 0
+  # numHour24 = int(time.strftime("%-H", timestamp))
+  # a = ((int(time.strftime("%-H", timestamp)) + 11) * 2) % 24
+  # timestamp = (chr(128336+a//2+a%2*12)) #+ poop
+
+  days[day].append(Tweet(numHour, '<span class="timestamp">' + poop + '</span>' +'\n' + text))
 
 all = []
 
+for i in range(0, 11):
+  all.append(Tweet(i, ' '))
+
+firstones = 0
+
 for day in sorted(days.keys()):
-  all.extend(days[day])
+  for tweet in days[day]:
+    if firstones < 2:
+      firstones += 1
+      continue
+    aa = all[-1].time if len(all) else -1
+    if aa == 11:
+      aa = -1
+    if tweet.time == aa:
+      continue # uh ohhhh
+    while aa + 1 < tweet.time:
+      all.append(Tweet(aa + 1, ' '))
+      aa += 1
+    all.append(tweet)
+  aa = all[-1].time
+  while aa + 1 < 12:
+    all.append(Tweet(aa + 1, ' '))
+    aa += 1
 
 things_per_column = 6
 la = list(chunks(all, things_per_column * 2))
@@ -78,7 +109,12 @@ for page in groups:
           *, *:before, *:after {
             box-sizing: inherit;
           }
+          .timestamp {
+            font-family: Helvetica, sans-serif;
+            font-weight: lighter;
+          }
           pre {
+            font-size: 12pt;
             line-height: 1.25;
             white-space: pre-wrap;
             font-family: "Courier New",monospace;
@@ -105,7 +141,6 @@ for page in groups:
             height: 1224pt;
             clear: both;
             page-break-after: always;
-            border: 1px solid black;
           }
           .printPage:nth-child(odd) {
             padding-left: 72pt;
@@ -123,11 +158,11 @@ for page in groups:
       for tweet in row:
         if tweet == None:
           continue
-        out.write ('<pre>')
-        lastIndex = tweet.rfind('https://t.co')
+        out.write ('<pre class="' + str(tweet.time) + '">')
+        lastIndex = tweet.text.rfind('https://t.co')
         if lastIndex == -1:
-          lastIndex = len(tweet)
-        out.write (tweet[:lastIndex].strip()+'\n')
+          lastIndex = len(tweet.text)
+        out.write (tweet.text[:lastIndex].strip()+'\n')
         out.write ('</pre>\n')
       out.write ('</div>\n')
     out.write('</div>\n')

@@ -147,6 +147,8 @@ for page in groups:
                            01 -0.04em,
                            17 -0.04em,
                            20 0.04em,
+                           14 -0.02em,
+                           31 -0.02em,
                            12 -0.02em;
           }
           pre {

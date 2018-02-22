@@ -187,6 +187,7 @@ for page in groups:
           .printPage:nth-child(odd) {
             padding-left: 72pt;
             padding-right: 0;
+            margin-top: 1em;
           }
           .printPage:nth-child(even) {
             padding-right: 72pt;
